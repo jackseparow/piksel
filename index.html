@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lukis Piksel Digital - Taman Numerasi BBGTK DIY</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: #f4f7f6;
+      color: #333;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    /* Header BBGTK & Si Yo */
+    header {
+      width: 100%;
+      max-width: 1280px;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 12px 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .header-left, .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-title {
+      text-align: center;
+    }
+    .header-title h1 {
+      font-size: 20px;
+      color: #1a365d;
+      letter-spacing: 0.5px;
+    }
+    .header-title p {
+      font-size: 13px;
+      color: #4a5568;
+      font-weight: 600;
+    }
+    
+    /* Style Gambar Logo & Maskot */
+    .header-left img.logo-img {
+      height: 50px;
+      width: auto;
+      object-fit: contain;
+    }
+    .header-right img.mascot-img {
+      height: 55px;
+      width: auto;
+      object-fit: contain;
+    }
+    
+    .mascot-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #ebf8ff;
+      padding: 6px 14px;
+      border-radius: 30px;
+      border: 1px solid #bee3f8;
+    }
+    .mascot-box span {
+      font-weight: bold;
+      color: #2b6cb0;
+      font-size: 14px;
+    }
+
+    /* Layout Utama 2 Kolom */
+    .main-layout {
+      width: 100%;
+      max-width: 1280px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    /* Panel Kiri - Matriks Input Kode */
+    .panel-left {
+      background: white;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      width: 460px;
+      min-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .panel-title {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #2b6cb0;
+      text-align: center;
+    }
+    
+    .matrix-container {
+      max-height: 480px;
+      overflow-y: auto;
+      overflow-x: auto;
+      padding: 4px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    .matrix-grid {
+      display: grid;
+      gap: 2px;
+      background: #cbd5e0;
+      padding: 3px;
+      border-radius: 6px;
+    }
+    .matrix-cell {
+      width: 23px;
+      height: 23px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+      border: 1px solid #cbd5e0;
+      outline: none;
+      background: white;
+      transition: all 0.15s;
+    }
+    .matrix-cell.active {
+      background: #2d3748;
+      color: white;
+    }
+
+    /* Panel Kanan - Canvas Layar Digital */
+    .panel-right {
+      background: white;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #screenCanvas {
+      background: #ffffff;
+      border: 3px solid #2d3748;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Control & Preset Buttons */
+    .controls-group {
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      width: 100%;
+    }
+    button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+      background: #3182ce;
+      color: white;
+      transition: all 0.2s;
+    }
+    button:hover { background: #2b6cb0; }
+    button.btn-clear { background: #e53e3e; }
+    button.btn-clear:hover { background: #c53030; }
+
+    .instructions {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #4a5568;
+      background: #ebf8ff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border-left: 4px solid #3182ce;
+      width: 100%;
+    }
+
+    @media (max-width: 900px) {
+      .main-layout { flex-direction: column; }
+      .panel-left, .panel-right { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Banner -->
+  <header>
+    <!-- Kiri Atas: Logo BBGTK DIY -->
+    <div class="header-left">
+      <img src="bbgtk diy logo.png" alt="Logo BBGTK DIY" class="logo-img">
+    </div>
+    
+    <!-- Tengah: Judul Aplikasi -->
+    <div class="header-title">
+      <p style="color: #2b6cb0; font-size: 12px; text-transform: uppercase;">Taman Numerasi</p>
+      <h1>LUKIS PIKSEL DIGITAL</h1>
+      <p>Eksplorasi Kode Biner (0 & 1) Pembentuk Gambar di Layar Komputer</p>
+    </div>
+
+    <!-- Kanan Atas: Maskot Si Yo -->
+    <div class="header-right">
+      <div class="mascot-box">
+        <img src="maskot-siyo.png" alt="Maskot Si Yo" class="mascot-img">
+        <span>Si Yo</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Utama 2 Kolom -->
+  <div class="main-layout">
+    
+    <!-- Sisi Kiri: Matriks Input Kode -->
+    <div class="panel-left">
+      <div class="panel-title">Matriks Kode Biner (16 × 16 Dot)</div>
+      
+      <div class="matrix-container">
+        <div id="matrixGrid" class="matrix-grid"></div>
+      </div>
+
+      <div class="controls-group">
+        <button onclick="clearMatrix()" class="btn-clear">Bersihkan Grid</button>
+        <button onclick="invertMatrix()">Invert Warna (0 ↔ 1)</button>
+      </div>
+
+      <div class="instructions">
+        <strong>Petunjuk Bermain:</strong>
+        <ul style="margin-left: 16px; margin-top: 4px;">
+          <li>Ketik <strong>1</strong> untuk menghitamkan titik (piksel).</li>
+          <li>Ketik <strong>0</strong> untuk mengosongkan/memutihkan titik.</li>
+          <li>Atau <strong>klik langsung pada kotak di layar kanan</strong> untuk melukis!</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Sisi Kanan: Canvas Layar Digital -->
+    <div class="panel-right">
+      <div class="panel-title">Tampilan Layar Digital (Strimin 8×8)</div>
+      <canvas id="screenCanvas" width="480" height="480"></canvas>
+
+      <div style="margin-top: 15px; text-align: center; width: 100%;">
+        <span style="font-weight: bold; font-size: 13px; color: #2d3748;">Contoh Gambar Primitif (Preset):</span>
+        <div class="controls-group" style="margin-top: 8px;">
+          <button onclick="loadPreset('smiley')">😃 Senyum</button>
+          <button onclick="loadPreset('heart')">❤️ Hati</button>
+          <button onclick="loadPreset('letterA')">🔤 Huruf A</button>
+          <button onclick="loadPreset('invader')">👾 Space Invader</button>
+          <button onclick="loadPreset('boat')">⛵ Perahu</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const GRID_SIZE = 16;        // Grid 16x16 titik
+    const BLOCK_SIZE = 8;        // Garis tebal per blok 8x8
+    const CELL_PIXEL_SIZE = 30;  // Ukuran piksel di Canvas (480px total)
+
+    let matrixData = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
+
+    const canvas = document.getElementById('screenCanvas');
+    const ctx = canvas.getContext('2d');
+    const matrixGridElem = document.getElementById('matrixGrid');
+
+    // Inisialisasi Input Matriks Kiri
+    function initMatrixGrid() {
+      matrixGridElem.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+      matrixGridElem.innerHTML = '';
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.maxLength = 1;
+          input.className = 'matrix-cell';
+          input.dataset.row = r;
+          input.dataset.col = c;
+          input.value = matrixData[r][c];
+
+          // Event Pengetikan
+          input.addEventListener('input', (e) => {
+            let val = e.target.value;
+            if (val !== '0' && val !== '1') {
+              e.target.value = '0';
+              val = '0';
+            }
+            matrixData[r][c] = parseInt(val);
+            updateCellHighlight(e.target, val);
+            drawCanvas();
+          });
+
+          input.addEventListener('focus', (e) => e.target.select());
+          matrixGridElem.appendChild(input);
+        }
+      }
+    }
+
+    function updateCellHighlight(elem, val) {
+      if (val === '1') {
+        elem.classList.add('active');
+      } else {
+        elem.classList.remove('active');
+      }
+    }
+
+    // Menggambar Layar Digital
+    function drawCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const x = c * CELL_PIXEL_SIZE;
+          const y = r * CELL_PIXEL_SIZE;
+
+          // Isi Warna piksel
+          ctx.fillStyle = matrixData[r][c] === 1 ? '#1a202c' : '#ffffff';
+          ctx.fillRect(x, y, CELL_PIXEL_SIZE, CELL_PIXEL_SIZE);
+
+          // Garis kisi tipis milimeterblok
+          ctx.strokeStyle = '#e2e8f0';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, CELL_PIXEL_SIZE, CELL_PIXEL_SIZE);
+        }
+      }
+
+      // Garis Pembatas Tebal Blok 8x8
+      ctx.strokeStyle = '#3182ce';
+      ctx.lineWidth = 3;
+
+      for (let i = 0; i <= GRID_SIZE; i += BLOCK_SIZE) {
+        const pos = i * CELL_PIXEL_SIZE;
+        // Garis Vertikal
+        ctx.beginPath();
+        ctx.moveTo(pos, 0);
+        ctx.lineTo(pos, canvas.height);
+        ctx.stroke();
+
+        // Garis Horizontal
+        ctx.beginPath();
+        ctx.moveTo(0, pos);
+        ctx.lineTo(canvas.width, pos);
+        ctx.stroke();
+      }
+    }
+
+    // Klik Langsung di Canvas Layar
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const c = Math.floor(x / CELL_PIXEL_SIZE);
+      const r = Math.floor(y / CELL_PIXEL_SIZE);
+
+      if (r >= 0 && r < GRID_SIZE && c >= 0 && c < GRID_SIZE) {
+        matrixData[r][c] = matrixData[r][c] === 1 ? 0 : 1;
+        
+        // Sync ke Matriks Kiri
+        const inputs = matrixGridElem.querySelectorAll('.matrix-cell');
+        const targetInput = inputs[r * GRID_SIZE + c];
+        targetInput.value = matrixData[r][c];
+        updateCellHighlight(targetInput, String(matrixData[r][c]));
+
+        drawCanvas();
+      }
+    });
+
+    function clearMatrix() {
+      matrixData = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
+      syncMatrixToUI();
+    }
+
+    function invertMatrix() {
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          matrixData[r][c] = matrixData[r][c] === 1 ? 0 : 1;
+        }
+      }
+      syncMatrixToUI();
+    }
+
+    function syncMatrixToUI() {
+      const inputs = matrixGridElem.querySelectorAll('.matrix-cell');
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const val = matrixData[r][c];
+          const input = inputs[r * GRID_SIZE + c];
+          input.value = val;
+          updateCellHighlight(input, String(val));
+        }
+      }
+      drawCanvas();
+    }
+
+    // Preset Gambar
+    function loadPreset(name) {
+      clearMatrix();
+      if (name === 'smiley') {
+        const smiley = [
+          [4,4],[4,11],[5,4],[5,11],
+          [10,3],[11,4],[11,5],[11,6],[11,7],[11,8],[11,9],[11,10],[10,12]
+        ];
+        smiley.forEach(([r,c]) => matrixData[r][c] = 1);
+      } else if (name === 'heart') {
+        const heart = [
+          [3,4],[3,5],[3,10],[3,11],
+          [4,3],[4,6],[4,9],[4,12],
+          [5,2],[5,13],[6,2],[6,13],
+          [7,3],[7,12],[8,4],[8,11],
+          [9,5],[9,10],[10,6],[10,9],
+          [11,7],[11,8]
+        ];
+        heart.forEach(([r,c]) => matrixData[r][c] = 1);
+      } else if (name === 'letterA') {
+        const letterA = [
+          [2,7],[2,8],
+          [3,6],[3,9],
+          [4,5],[4,10],
+          [5,4],[5,11],
+          [6,4],[6,5],[6,6],[6,7],[6,8],[6,9],[6,10],[6,11],
+          [7,4],[7,11],
+          [8,4],[8,11],
+          [9,4],[9,11]
+        ];
+        letterA.forEach(([r,c]) => matrixData[r][c] = 1);
+      } else if (name === 'invader') {
+        const invader = [
+          [3,5],[3,10],
+          [4,6],[4,9],
+          [5,4],[5,5],[5,6],[5,7],[5,8],[5,9],[5,10],[5,11],
+          [6,3],[6,4],[6,6],[6,7],[6,8],[6,9],[6,11],[6,12],
+          [7,3],[7,4],[7,5],[7,6],[7,7],[7,8],[7,9],[7,10],[7,11],[7,12],
+          [8,3],[8,5],[8,10],[8,12],
+          [9,3],[9,12],[10,5],[10,10]
+        ];
+        invader.forEach(([r,c]) => matrixData[r][c] = 1);
+      } else if (name === 'boat') {
+        const boat = [
+          [2,8],[3,8],[4,8],[5,8],[6,8],[7,8],
+          [4,7],[5,6],[6,5],[7,4],
+          [9,3],[9,4],[9,5],[9,6],[9,7],[9,8],[9,9],[9,10],[9,11],[9,12],
+          [10,4],[10,5],[10,6],[10,7],[10,8],[10,9],[10,10],[10,11],
+          [11,5],[11,6],[11,7],[11,8],[11,9],[11,10]
+        ];
+        boat.forEach(([r,c]) => matrixData[r][c] = 1);
+      }
+      syncMatrixToUI();
+    }
+
+    // Inisialisasi awal
+    initMatrixGrid();
+    drawCanvas();
+  </script>
+</body>
+</html>
