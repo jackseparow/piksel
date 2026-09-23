@@ -326,7 +326,7 @@
               <tr>
                 <th>Baris</th>
                 <th>Kode Biner (Kiri | Kanan)</th>
-                <th>Nilai Desimal</th>
+                <th>Nilai Desimal (Kiri | Kanan)</th>
                 <th>Kode Hex</th>
               </tr>
             </thead>
@@ -475,7 +475,7 @@
         tr.innerHTML = `
           <td>Baris ${r + 1}</td>
           <td>${rowLeftBits} | ${rowRightBits}</td>
-          <td>${byteLeft}, ${byteRight}</td>
+          <td>${byteLeft} | ${byteRight}</td>
           <td>#${hexCombine}</td>
         `;
         tbody.appendChild(tr);
