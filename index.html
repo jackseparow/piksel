@@ -52,7 +52,6 @@
       font-weight: 600;
     }
     
-    /* Style Gambar Logo & Maskot */
     .header-left img.logo-img {
       height: 50px;
       width: auto;
@@ -162,7 +161,7 @@
 
     /* Control & Preset Buttons */
     .controls-group {
-      margin-top: 15px;
+      margin-top: 12px;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
@@ -183,6 +182,8 @@
     button:hover { background: #2b6cb0; }
     button.btn-clear { background: #e53e3e; }
     button.btn-clear:hover { background: #c53030; }
+    button.btn-success { background: #38a169; }
+    button.btn-success:hover { background: #2f855a; }
 
     .instructions {
       margin-top: 12px;
@@ -195,6 +196,52 @@
       width: 100%;
     }
 
+    /* Panel Kode Piksel Gambar */
+    .pixel-code-card {
+      margin-top: 15px;
+      width: 100%;
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .pixel-code-card h4 {
+      font-size: 13px;
+      color: #2d3748;
+      margin-bottom: 8px;
+    }
+    .code-output-box {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .code-input {
+      flex: 1;
+      padding: 6px 10px;
+      font-family: monospace;
+      font-size: 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 4px;
+      background: #edf2f7;
+    }
+
+    .pixel-code-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: monospace;
+      font-size: 11px;
+      margin-top: 8px;
+    }
+    .pixel-code-table th, .pixel-code-table td {
+      padding: 4px 6px;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+    }
+    .pixel-code-table th {
+      background: #ebf8ff;
+      color: #2b6cb0;
+    }
+
     @media (max-width: 900px) {
       .main-layout { flex-direction: column; }
       .panel-left, .panel-right { width: 100%; }
@@ -205,19 +252,16 @@
 
   <!-- Header Banner -->
   <header>
-    <!-- Kiri Atas: Logo BBGTK DIY -->
     <div class="header-left">
       <img src="bbgtk diy logo.png" alt="Logo BBGTK DIY" class="logo-img">
     </div>
     
-    <!-- Tengah: Judul Aplikasi -->
     <div class="header-title">
       <p style="color: #2b6cb0; font-size: 12px; text-transform: uppercase;">Taman Numerasi</p>
       <h1>PIKSEL</h1>
       <p>Eksplorasi Kode Biner (0 & 1) Pembentuk Gambar di Layar Komputer</p>
     </div>
 
-    <!-- Kanan Atas: Maskot Si Yo -->
     <div class="header-right">
       <div class="mascot-box">
         <img src="maskot-siyo.png" alt="Maskot Si Yo" class="mascot-img">
@@ -252,14 +296,14 @@
       </div>
     </div>
 
-    <!-- Sisi Kanan: Canvas Layar Digital -->
+    <!-- Sisi Kanan: Canvas Layar Digital & Kode Piksel -->
     <div class="panel-right">
       <div class="panel-title">Tampilan Layar Digital (Strimin 8×8)</div>
       <canvas id="screenCanvas" width="480" height="480"></canvas>
 
-      <div style="margin-top: 15px; text-align: center; width: 100%;">
+      <div style="margin-top: 12px; text-align: center; width: 100%;">
         <span style="font-weight: bold; font-size: 13px; color: #2d3748;">Contoh Gambar Primitif (Preset):</span>
-        <div class="controls-group" style="margin-top: 8px;">
+        <div class="controls-group" style="margin-top: 6px;">
           <button onclick="loadPreset('smiley')">😃 Senyum</button>
           <button onclick="loadPreset('heart')">❤️ Hati</button>
           <button onclick="loadPreset('letterA')">🔤 Huruf A</button>
@@ -267,6 +311,32 @@
           <button onclick="loadPreset('boat')">⛵ Perahu</button>
         </div>
       </div>
+
+      <!-- Panel Kode Piksel Gambar -->
+      <div class="pixel-code-card">
+        <h4>Kode Ringkas Gambar (Heksadesimal / Biner):</h4>
+        <div class="code-output-box">
+          <input type="text" id="hexCodeOutput" class="code-input" readonly placeholder="Kode Ringkas Gambar...">
+          <button onclick="copyHexCode()" class="btn-success">Salin Kode</button>
+        </div>
+
+        <div style="margin-top: 10px; max-height: 120px; overflow-y: auto;">
+          <table class="pixel-code-table">
+            <thead>
+              <tr>
+                <th>Baris</th>
+                <th>Kode Biner (Kiri | Kanan)</th>
+                <th>Nilai Desimal</th>
+                <th>Kode Hex</th>
+              </tr>
+            </thead>
+            <tbody id="pixelTableBody">
+              <!-- Dynamically Filled -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -297,7 +367,6 @@
           input.dataset.col = c;
           input.value = matrixData[r][c];
 
-          // Event Pengetikan
           input.addEventListener('input', (e) => {
             let val = e.target.value;
             if (val !== '0' && val !== '1') {
@@ -307,6 +376,7 @@
             matrixData[r][c] = parseInt(val);
             updateCellHighlight(e.target, val);
             drawCanvas();
+            updatePixelCodeData();
           });
 
           input.addEventListener('focus', (e) => e.target.select());
@@ -332,11 +402,9 @@
           const x = c * CELL_PIXEL_SIZE;
           const y = r * CELL_PIXEL_SIZE;
 
-          // Isi Warna piksel
           ctx.fillStyle = matrixData[r][c] === 1 ? '#1a202c' : '#ffffff';
           ctx.fillRect(x, y, CELL_PIXEL_SIZE, CELL_PIXEL_SIZE);
 
-          // Garis kisi tipis milimeterblok
           ctx.strokeStyle = '#e2e8f0';
           ctx.lineWidth = 1;
           ctx.strokeRect(x, y, CELL_PIXEL_SIZE, CELL_PIXEL_SIZE);
@@ -349,13 +417,11 @@
 
       for (let i = 0; i <= GRID_SIZE; i += BLOCK_SIZE) {
         const pos = i * CELL_PIXEL_SIZE;
-        // Garis Vertikal
         ctx.beginPath();
         ctx.moveTo(pos, 0);
         ctx.lineTo(pos, canvas.height);
         ctx.stroke();
 
-        // Garis Horizontal
         ctx.beginPath();
         ctx.moveTo(0, pos);
         ctx.lineTo(canvas.width, pos);
@@ -375,15 +441,55 @@
       if (r >= 0 && r < GRID_SIZE && c >= 0 && c < GRID_SIZE) {
         matrixData[r][c] = matrixData[r][c] === 1 ? 0 : 1;
         
-        // Sync ke Matriks Kiri
         const inputs = matrixGridElem.querySelectorAll('.matrix-cell');
         const targetInput = inputs[r * GRID_SIZE + c];
         targetInput.value = matrixData[r][c];
         updateCellHighlight(targetInput, String(matrixData[r][c]));
 
         drawCanvas();
+        updatePixelCodeData();
       }
     });
+
+    // Menghitung & Meng-update Data Kode Piksel
+    function updatePixelCodeData() {
+      const tbody = document.getElementById('pixelTableBody');
+      tbody.innerHTML = '';
+
+      let fullHexArray = [];
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        const rowLeftBits = matrixData[r].slice(0, 8).join('');
+        const rowRightBits = matrixData[r].slice(8, 16).join('');
+
+        const byteLeft = parseInt(rowLeftBits, 2);
+        const byteRight = parseInt(rowRightBits, 2);
+
+        const hexLeft = byteLeft.toString(16).padStart(2, '0').toUpperCase();
+        const hexRight = byteRight.toString(16).padStart(2, '0').toUpperCase();
+        const hexCombine = `${hexLeft}${hexRight}`;
+
+        fullHexArray.push(hexCombine);
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>Baris ${r + 1}</td>
+          <td>${rowLeftBits} | ${rowRightBits}</td>
+          <td>${byteLeft}, ${byteRight}</td>
+          <td>#${hexCombine}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      document.getElementById('hexCodeOutput').value = fullHexArray.join('-');
+    }
+
+    function copyHexCode() {
+      const hexInput = document.getElementById('hexCodeOutput');
+      hexInput.select();
+      navigator.clipboard.writeText(hexInput.value);
+      alert('Kode Ringkas Gambar Berhasil Disalin!');
+    }
 
     function clearMatrix() {
       matrixData = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
@@ -410,6 +516,7 @@
         }
       }
       drawCanvas();
+      updatePixelCodeData();
     }
 
     // Preset Gambar
@@ -470,6 +577,7 @@
     // Inisialisasi awal
     initMatrixGrid();
     drawCanvas();
+    updatePixelCodeData();
   </script>
 </body>
 </html>
